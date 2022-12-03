@@ -5,11 +5,11 @@ import pandas as pd
 Data = { 
         'Sequence ID': [1,2,3,4,5],
         
-         'Sequence': ['<AB(FG)CD>',
-                      '<BGD>',
-                      '<BFG(AB)>',
-                      '<F(AB)CD>',
-                      '<A(BC)GF(DE)>'
+         'Sequence': ['AB(FG)CD',
+                      'BGD',
+                      'BFG(AB)',
+                      'F(AB)CD',
+                      'A(BC)GF(DE)'
                      ]
         }
 
@@ -35,15 +35,116 @@ Support = {}
 #List that contains frequent sequences, Ex: 'A' or  
 FrequentSequences = []
 
+
+
+#takes a sequence and splits it into a list a of elements, EX AB(CD)E ==> [A,B,(CD),E]
+def splitSequence(Sequence):
+    #Split the SubSequence into individual elements (temporal in mind)
+    TempElement = ""
+    SequenceSplit = []
+    i = 0
+    while i < len(Sequence):
+        TempElement = ""
+        if (Sequence[i] != '('):
+            SequenceSplit.append(Sequence[i])
+        else:
+            for j in range (i,len(Sequence)):
+                if(Sequence[j] == ')'):
+                    TempElement += Sequence[j]
+                    i = j
+                    break
+                else:
+                    TempElement += Sequence[j]   
+            SequenceSplit.append(TempElement)
+        i = i + 1
+
+    return SequenceSplit
+
+
+
 #Function that checks if SubSequence is a sub sequence of SuperSequence, and returns true if so
 def isSubSequence(SubSequence, SuperSequence):
-    print("Remove the print and do meeee")
-        
+    
+    SubSequenceSplit = splitSequence(SubSequence)
+    SuperSequenceSplit = splitSequence(SuperSequence)
+    
+
+    
+    Flag = True
+    TemporalSplit = []
+    
+    for i in SubSequenceSplit:
+        #If temporal element, Ex ==> (AB), first split it in to A , B and then look for them 
+        if (i[0] == '('):
+            TemporalSplit = [*i[1: len(i) -1]] #Split by items inside the ()
+            TemporalFlag = False
+            for j in SuperSequenceSplit:
+                if(j[0] == '('):
+                    TemporalFlag = True
+                    for k in TemporalSplit:
+                        if(k in j):
+                            j = j[j.index(k) + 1: len(j)]
+                        else:
+                            TemporalFlag = False
+                            break
+                    if(TemporalFlag):
+                        break
+            if (not TemporalFlag):
+                Flag = False
+                break
+                
+         
+                        
+                        
+                        
+        else:   #non temporal emlement, check if it exists in the super sequence, if not then check if it exists in the temporal elements of the super sequence
+            if (i in SuperSequenceSplit):
+                SuperSequenceSplit = SuperSequenceSplit[SuperSequenceSplit.index(i) + 1: len(SuperSequenceSplit)]
+                
+            else:
+                TemporalFlag2 = False
+                for j in SuperSequenceSplit:
+                    if(j[0] == '('):
+                        TemporalFlag2 = True
+                        if(i in j):
+                            SuperSequenceSplit = SuperSequenceSplit[SuperSequenceSplit.index(j) + 1: len(SuperSequenceSplit)]
+                            break
+                        else:
+                            TemporalFlag2 = False
+                    if (TemporalFlag2):
+                        break                    
+                if (not TemporalFlag2):
+                    return False
+     
+         
+
+    return Flag
+    
+    
+
+
+def calculateSupport(SubSequence):
+    Support = 0
+    for i in df.index:
+        if (isSubSequence(SubSequence, df.iloc[i].Sequence)):
+            Support = Support + 1
+
+    return Support
+
 
 
 #Generate one item candidates based on support, also register them in the Support dictionary and FrequentSequences
 def generateOneItemCandidateSequences():
-    print("Remove the print and do meeee")
+    
+    setOfCandidates = set()
+    for i in df.index:
+        for j in df.iloc[i].Sequence:
+            if(j != "(" and j != ")"):
+                setOfCandidates.add(j)
+                
+    for i in setOfCandidates:
+        if(calculateSupport(i) >= MinSupport):
+            FrequentSequences.append(i);
     
     
     
@@ -57,7 +158,7 @@ def generateTwoItemsCandidateSequences():
     
     
     
-#Function that takes a sequence and returns a list of all possible subsequences ()
+#Function that takes a sequence and returns a list of all possible subsequences (used for pruning)
 def getAllSubSequences(Sequence):
     print("Remove the print and do meeee")
     
@@ -97,6 +198,9 @@ def GSPAlgorithm():
 
 
 
+generateOneItemCandidateSequences()
+
+print(FrequentSequences)
 
 
 

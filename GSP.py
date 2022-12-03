@@ -30,10 +30,11 @@ MinSupport = 2
 
 #Dictionary to store calculated support of sequences as we go (used for pruning)
 #Entry example: '<AB(CD)>' : 3 , which means that sequence has a support of three
-Support = {}
+SequencesSupport = {}
 
 #List that contains frequent sequences, Ex: 'A' or  
 FrequentSequences = []
+
 
 
 
@@ -83,7 +84,7 @@ def isSubSequence(SubSequence, SuperSequence):
                     TemporalFlag = True
                     for k in TemporalSplit:
                         if(k in j):
-                            j = j[j.index(k) + 1: len(j)]
+                            j.replace(k, '')
                         else:
                             TemporalFlag = False
                             break
@@ -136,15 +137,17 @@ def calculateSupport(SubSequence):
 #Generate one item candidates based on support, also register them in the Support dictionary and FrequentSequences
 def generateOneItemCandidateSequences():
     
-    setOfCandidates = set()
+    SetOfCandidates = set()
     for i in df.index:
         for j in df.iloc[i].Sequence:
             if(j != "(" and j != ")"):
-                setOfCandidates.add(j)
+                SetOfCandidates.add(j)
                 
-    for i in setOfCandidates:
-        if(calculateSupport(i) >= MinSupport):
-            FrequentSequences.append(i);
+    for i in SetOfCandidates:
+        Support = calculateSupport(i)
+        SequencesSupport[i] = Support
+        if(Support >= MinSupport):
+            FrequentSequences.append(i)
     
     
     
@@ -152,8 +155,26 @@ def generateOneItemCandidateSequences():
 #Remove the ones that don't meet support threshold (hint: use the isSubSequence method as a helper function here)
 #Add the frequent sequences to the FrequentSequences list.
 def generateTwoItemsCandidateSequences():
-    print("Remove the print and do meeee")
+    ListOfCandidates = []
+    #Temporal Joins
     
+    for i in FrequentSequences:
+        for j in FrequentSequences:
+            ListOfCandidates.append(i+j)
+    
+            
+    for i in FrequentSequences:
+        for j in FrequentSequences[FrequentSequences.index(i)+1: len(FrequentSequences)]:
+            ListOfCandidates.append('('+i+j+')')
+    
+    
+    for i in ListOfCandidates:
+        Support = calculateSupport(i)
+        SequencesSupport[i] = Support
+        if(Support >= MinSupport):
+            FrequentSequences.append(i)
+
+
     
     
     
@@ -195,12 +216,16 @@ def GSPAlgorithm():
 
 
 
+sup = calculateSupport('FA')
 
+print (sup)
 
+#generateOneItemCandidateSequences()
 
-generateOneItemCandidateSequences()
+#generateTwoItemsCandidateSequences()
 
-print(FrequentSequences)
+#print (FrequentSequences)
+
 
 
 

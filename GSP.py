@@ -19,6 +19,7 @@ Data = {
 df = pd.DataFrame(Data);
 
 
+#Should be at least 2, (1 or 0 doesn't function because it is logically incorrect)
 MinSupport = 2
 
 #Dictionary to store calculated support of sequences as we go (used for pruning)
@@ -303,8 +304,7 @@ def GSPAlgorithm():
     while generateKItemsCandidateSequences(i):
         i = i + 1
 
-    for i in FrequentSequences:
-        print (i)
+    print(FrequentSequences)
 
 
 

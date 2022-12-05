@@ -78,6 +78,7 @@ def isSubSequence(SubSequence, SuperSequence):
             TemporalFlag = False
             for j in SuperSequenceSplit:
                 if(j[0] == '('):
+                    ElemValueToCutFrom = j
                     TemporalFlag = True
                     for k in TemporalSplit:
                         if(k in j):
@@ -86,6 +87,7 @@ def isSubSequence(SubSequence, SuperSequence):
                             TemporalFlag = False
                             break
                     if(TemporalFlag):
+                        SuperSequenceSplit = SuperSequenceSplit[SuperSequenceSplit.index(ElemValueToCutFrom) + 1: len(SuperSequenceSplit)]
                         break
             if (not TemporalFlag):
                 Flag = False
@@ -314,9 +316,6 @@ def GSPAlgorithm():
 #Algorithm Run:
     
 GSPAlgorithm()
-
-
-
 
 
 

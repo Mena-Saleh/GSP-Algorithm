@@ -1,6 +1,7 @@
 import pandas as pd
 
 
+
 #Data is static for now, because it is hard to find sequential datasets
 Data = { 
         'Sequence ID': [1,2,3,4,5],
@@ -68,57 +69,57 @@ def isSubSequence(SubSequence, SuperSequence):
     
 
     
-    Flag = True
-    TemporalSplit = []
+    ToReturn = True
+    ElementSplit = []
     
     for i in SubSequenceSplit:
-        #If temporal element, Ex ==> (AB), first split it in to A , B and then look for them 
+        #If none temporal element, Ex ==> (AB), first split it in to A , B and then look for them 
         if (i[0] == '('):
-            TemporalSplit = [*i[1: len(i) -1]] #Split by items inside the ()
-            TemporalFlag = False
+            ElementSplit = [*i[1: len(i) -1]] #Split by items inside the () EX -> (AB) will be [A,B]
+            FoundFlag = False
             for j in SuperSequenceSplit:
                 if(j[0] == '('):
                     ElemValueToCutFrom = j
-                    TemporalFlag = True
-                    for k in TemporalSplit:
+                    FoundFlag = True
+                    for k in ElementSplit:
                         if(k in j):
                             j = j.replace(k, '')
                         else:
-                            TemporalFlag = False
+                            FoundFlag = False
                             break
-                    if(TemporalFlag):
+                    if(FoundFlag):
                         SuperSequenceSplit = SuperSequenceSplit[SuperSequenceSplit.index(ElemValueToCutFrom) + 1: len(SuperSequenceSplit)]
                         break
-            if (not TemporalFlag):
-                Flag = False
+            if (not FoundFlag):
+                ToReturn = False
                 break
                 
          
                         
                         
                         
-        else:   #non temporal emlement, check if it exists in the super sequence, if not then check if it exists in the temporal elements of the super sequence
+        else:   #temporal element, check if it exists in the super sequence, if not then check if it exists in the none temporal elements of the super sequence
             if (i in SuperSequenceSplit):
                 SuperSequenceSplit = SuperSequenceSplit[SuperSequenceSplit.index(i) + 1: len(SuperSequenceSplit)]
                 
             else:
-                TemporalFlag2 = False
+                FoundFlag = False
                 for j in SuperSequenceSplit:
                     if(j[0] == '('):
-                        TemporalFlag2 = True
+                        FoundFlag = True
                         if(i in j):
                             SuperSequenceSplit = SuperSequenceSplit[SuperSequenceSplit.index(j) + 1: len(SuperSequenceSplit)]
                             break
                         else:
-                            TemporalFlag2 = False
-                    if (TemporalFlag2):
+                            FoundFlag = False
+                    if (FoundFlag):
                         break                    
-                if (not TemporalFlag2):
+                if (not FoundFlag):
                     return False
      
          
 
-    return Flag
+    return ToReturn
     
     
 
@@ -148,15 +149,17 @@ def insertStringAtPosition (SourceString, InsertString, Position):
 #Generate one item candidates based on support, also register them in the Support dictionary and FrequentSequences
 def generateOneItemCandidateSequences():
     
+    #Generate all candidates:
     SetOfCandidates = set()
     for i in df.index:
         for j in df.iloc[i].Sequence:
             if(j != "(" and j != ")"):
                 SetOfCandidates.add(j)
                 
+    #Remove the infrequent:            
     for i in SetOfCandidates:
         Support = calculateSupport(i)
-        SequencesSupport[i] = Support
+        SequencesSupport[i] = Support #Track support in dictionary for future use
         if(Support >= MinSupport):
             FrequentSequences.append(i)
     
@@ -179,7 +182,7 @@ def generateTwoItemsCandidateSequences():
     #Add only the frequent ones to the FrequentSequences list:
     for i in ListOfCandidates:
         Support = calculateSupport(i)
-        SequencesSupport[i] = Support
+        SequencesSupport[i] = Support #Track support in dictionary for future use
         if(Support >= MinSupport):
             FrequentSequences.append(i)
 
@@ -263,7 +266,7 @@ def generateKItemsCandidateSequences(k):
                 KItemCandidates.append(Candidate) #Add the matched item
     
     
-    #Return false if no candidates where generated
+    #Return false if no candidates where generated (end of algorithm)
     if(len(KItemCandidates) == 0):
         return False
 
@@ -284,11 +287,12 @@ def generateKItemsCandidateSequences(k):
     #Calculating support for pruned candidates and removing infrequent ones:
     for i in KItemCandidatesPruned:
         Support = calculateSupport(i)
-        SequencesSupport[i] = Support
+        SequencesSupport[i] = Support #Track support in dictionary for future use
         if(Support >= MinSupport):
             FrequentSequences.append(i)
             
     return True
+
 
 
 #This function runs the algorithm by executing all the previous functions, it also prints all frequent sequences
